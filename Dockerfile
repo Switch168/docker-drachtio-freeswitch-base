@@ -2,6 +2,7 @@ FROM debian:stretch-slim
 
 COPY ./*.patch /
 COPY ./vars_diff.xml /
+COPY ./modules.conf.in /
 
 RUN for i in $(seq 1 8); do mkdir -p "/usr/share/man/man${i}"; done \
     && apt-get update && apt-get -y --quiet --allow-remove-essential upgrade \
@@ -17,22 +18,26 @@ RUN for i in $(seq 1 8); do mkdir -p "/usr/share/man/man${i}"; done \
     && git clone https://freeswitch.org/stash/scm/fs/freeswitch.git -bv1.8 freeswitch \
     && cd freeswitch/libs \
     && git clone https://github.com/warmcat/libwebsockets.git  -b v3.1.0 \
-    && cd libwebsockets && mkdir -p build && cd build && cmake .. && make && make install \
-    && cd /usr/local/src/freeswitch \
+    && cd libwebsockets && mkdir -p build && cd build && cmake .. && make && make install 
+RUN cd /usr/local/src/freeswitch \
     && patch < /configure.ac.patch \
     && patch < /Makefile.am.patch \
-    && cd build && patch < /modules.conf.in.patch \
-    && echo "languages/mod_v8" >> modules.conf.in \
-    && cp modules.conf.in /  \
+    # patch broke
+    #&& cd build && patch < /modules.conf.in.patch \
+    #&& cp modules.conf.in /  \
+    && rm build/modules.conf.in \
+    && cp /modules.conf.in  build/modules.conf.in \
+    && echo "languages/mod_v8" >> ./build/modules.conf.in \
+    && cd build \
     && cd ../conf/vanilla/autoload_configs \
-    && patch < /modules.conf.vanilla.xml.patch \
+    #&& patch < /modules.conf.vanilla.xml.patch \
     && cp modules.conf.xml /  \
     && cd /usr/local/src/freeswitch \
     && rm /Makefile.am.patch \
     && cp -r /usr/local/src/drachtio-freeswitch-modules/modules/mod_audio_fork /usr/local/src/freeswitch/src/mod/applications/mod_audio_fork \
     && ./bootstrap.sh -j && ./configure --with-lws=yes \
     && make && make install \ 
-		&& cp /vars_diff.xml /usr/local/freeswitch/conf \
+    && cp /vars_diff.xml /usr/local/freeswitch/conf \
     && apt-get purge -y --quiet --allow-remove-essential  --auto-remove \
   	autoconf automake autotools-dev binutils build-essential bzip2 \
   	cmake cmake-data cpp cpp-6 dpkg-dev file g++ g++-6 gcc \
