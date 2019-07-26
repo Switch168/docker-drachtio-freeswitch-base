@@ -22,6 +22,7 @@ RUN for i in $(seq 1 8); do mkdir -p "/usr/share/man/man${i}"; done \
     && patch < /configure.ac.patch \
     && patch < /Makefile.am.patch \
     && cd build && patch < /modules.conf.in.patch \
+    && echo "languages/mod_v8" >> modules.conf.in \
     && cp modules.conf.in /  \
     && cd ../conf/vanilla/autoload_configs \
     && patch < /modules.conf.vanilla.xml.patch \
