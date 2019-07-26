@@ -18,8 +18,8 @@ RUN for i in $(seq 1 8); do mkdir -p "/usr/share/man/man${i}"; done \
     && git clone https://freeswitch.org/stash/scm/fs/freeswitch.git -bv1.8 freeswitch \
     && cd freeswitch/libs \
     && git clone https://github.com/warmcat/libwebsockets.git  -b v3.1.0 \
-    && cd libwebsockets && mkdir -p build && cd build && cmake .. && make && make install 
-RUN cd /usr/local/src/freeswitch \
+    && cd libwebsockets && mkdir -p build && cd build && cmake .. && make && make install \
+    && cd /usr/local/src/freeswitch \
     && patch < /configure.ac.patch \
     && patch < /Makefile.am.patch \
     # patch broke
